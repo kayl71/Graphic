@@ -75,11 +75,15 @@ class PyShader:
         self.screen_array = self.screen_field.to_numpy()
         self.draw()
 
-    def click(self, mouse_pos, camera_pos, squard_size):
+    def setLife(self, mouse_pos, camera_pos, squard_size):
         x = int(camera_pos[0] + mouse_pos[0]/squard_size)
         y = int(camera_pos[1] + mouse_pos[1]/squard_size)
-        self.world[x, y] = 1 - self.world[x, y]
-
+        self.world[x, y] = 1
+        
+    def removeLife(self, mouse_pos, camera_pos, squard_size):
+        x = int(camera_pos[0] + mouse_pos[0]/squard_size)
+        y = int(camera_pos[1] + mouse_pos[1]/squard_size)
+        self.world[x, y] = 0
 
 class App:
     def __init__(self):
@@ -93,6 +97,8 @@ class App:
         self.shader.start()
         camera_pos = [0, 0]
         updater = False
+        clickLeftPressed = False
+        clickRightPressed = False
         move_x = 0
         move_y = 0
         squard_size = 1.0
@@ -106,6 +112,11 @@ class App:
             if updater and pg.time.get_ticks() - last_time_world_update >= WPS:
                 self.shader.update()
                 last_time_world_update = pg.time.get_ticks()
+            if clickLeftPressed:
+                self.shader.setLife(mouse_pos, camera_pos, squard_size)
+            if clickRightPressed:
+                self.shader.removeLife(mouse_pos, camera_pos, squard_size)
+
                 
             self.shader.render(camera_pos, squard_size)
             pg.display.flip()
@@ -140,9 +151,17 @@ class App:
                         move_y = 0
                     elif key == pg.K_RIGHT or key == pg.K_LEFT:
                         move_x = 0
-
+                
                 if event.type == pg.MOUSEBUTTONDOWN:
-                    self.shader.click(mouse_pos, camera_pos, squard_size)
+                    if event.button == pg.BUTTON_LEFT:
+                        clickLeftPressed = True
+                    elif event.button == pg.BUTTON_RIGHT:
+                        clickRightPressed = True
+                elif event.type == pg.MOUSEBUTTONUP:
+                    if event.button == pg.BUTTON_LEFT:
+                        clickLeftPressed = False
+                    elif event.button == pg.BUTTON_RIGHT:
+                        clickRightPressed = False
 
                 elif event.type == pg.QUIT:
                     running = False
