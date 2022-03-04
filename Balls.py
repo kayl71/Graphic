@@ -1,5 +1,6 @@
 import pygame as pg
 import math
+import random
 
 
 FPS = 60
@@ -12,11 +13,16 @@ clock = pg.time.Clock()
 
 running = True
 
-balls = [ 
-    [(2, 2), [5, 5], 100],
-    [(200, 200), [-5, 5], 100],
-    [(10, 400), [5, -5], 100]
-    ]
+ballCount = 20
+
+balls = [0]*ballCount
+
+for i in range(ballCount):
+    balls[i] = [0]*3
+    balls[i][0] = (random.randint(0, width-80), random.randint(0, height-80))
+    balls[i][1] = [random.randint(5, 12), random.randint(5, 12)]
+    balls[i][2] = random.randint(40, 80)
+
 
 def BallsUpdate():
     global balls
@@ -40,17 +46,21 @@ def BallsRender():
 def BallsCollision():
     global balls
     centres = [0]*len(balls)
+    speeds = [0]*len(balls)
     for i in range(len(balls)):
         centres[i] = (balls[i][0][0] + balls[i][2]/2, balls[i][0][1] + balls[i][2]/2)
+        speeds[i] = (balls[i][1][0]**2 + balls[i][1][1]**2)**(1/2)
 
     for i in range(len(balls)):
         for j in range(i+1, len(balls)):
-            r = ((centres[i][1] - centres[j][1])**2 + (centres[i][0] - centres[j][0])**2)**(1/2)
+            y = centres[i][1] - centres[j][1]
+            x = centres[i][0] - centres[j][0]
+            r = (x**2 + y**2)**(1/2)
             if r <= (balls[i][2] + balls[j][2])/2:
-                balls[i][1][0] *= -1
-                balls[i][1][1] *= -1
-                balls[j][1][0] *= -1
-                balls[j][1][1] *= -1
+                balls[i][1][0] = speeds[i]*x/r
+                balls[i][1][1] = speeds[i]*y/r
+                balls[j][1][0] = -speeds[j]*x/r
+                balls[j][1][1] = -speeds[j]*y/r
 
 
 
@@ -76,3 +86,4 @@ while running:
     pg.display.set_caption(f'FPS: {clock.get_fps() :.2f}')
 
 pg.quit()
+
